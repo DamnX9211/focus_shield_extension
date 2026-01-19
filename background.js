@@ -11,16 +11,22 @@
  };
 
 chrome.runtime.onMessage.addListener((message) => {
-    if(message.type === "START_FOCUS") {
+    if(message.type === "ENABLE_FOCUS") {
         
         // logic to block distracting websites
         chrome.declarativeNetRequest.updateDynamicRules({
             
             removeRuleIds: [1],
-            addRules: [BLOCK_RULE],
+            addRules: [BLOCK_RULE]
         },
-    () => {
-        console.log('Blocking rules ENABLED');
-    });
-    }
+    () =>  console.log('Focus ENABLED')
+    );
+}
+  if(message.type === "DISABLE_FOCUS") {
+        // logic to unblock distracting websites
+        chrome.declarativeNetRequest.updateDynamicRules({
+            removeRuleIds: [1]
+        }, () => console.log('Focus DISABLED'));
+  }
+
 });
