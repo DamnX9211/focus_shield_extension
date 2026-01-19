@@ -1,10 +1,26 @@
-chrome.runtime.onInstalled.addListener(() => {
-    console.log('Focus Shield Extension Installed');
-})
-
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-    if(message.type === "START_FOCUS") {
-        console.log('Focus mode started');
-        // Add logic to block distracting websites here
+ const BLOCK_RULE = {
+    id:1,
+    priority: 1,
+    action: {
+        type: "block"
+    },
+    condition: {
+        urlFilter: "example.com",
+        resourceTypes: ["main_frame"]
     }
-})
+ };
+
+chrome.runtime.onMessage.addListener((message) => {
+    if(message.type === "START_FOCUS") {
+        
+        // logic to block distracting websites
+        chrome.declarativeNetRequest.updateDynamicRules({
+            
+            removeRuleIds: [1],
+            addRules: [BLOCK_RULE],
+        },
+    () => {
+        console.log('Blocking rules ENABLED');
+    });
+    }
+});
