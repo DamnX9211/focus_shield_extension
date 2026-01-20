@@ -1,32 +1,45 @@
- const BLOCK_RULE = {
-    id:1,
-    priority: 1,
-    action: {
-        type: "block"
-    },
-    condition: {
-        urlFilter: "example.com",
-        resourceTypes: ["main_frame"]
-    }
- };
+ function buildRules(sites) {
+    return sites.map((site, index) => ({
+        id: index + 1,
+        priority: 1,
+        action: {
+            type: "block"
+        },
+        condition: {
+           urlFilter: site,
+           resourceTypes: ["main_frame"]
+        }
+    }));
+ }
 
-chrome.runtime.onMessage.addListener((message) => {
-    if(message.type === "ENABLE_FOCUS") {
+                    // applying blocking rules
+ function applyRules() {
+    chrome.storage.local.get(["blockedSites", "focusEnabled"], (data) => {
+        if(!data.focusEnabled) return;
+
+        const sites = data.blockedSites || [];
+        const rules = buildRules(sites);
+        const ruleIds = rules.map((r) => r.id); 
         
-        // logic to block distracting websites
+        chrome.declarativeNetRequest.updateDynamicRules({
+            removeRuleIds: ruleIds,
+            addRules: rules
+        },
+        () => console.log("Rules Updated:", sites)
+    );
+     });
+ }
+
+    // MESSAGE LISTENER
+chrome.runtime.onMessage.addListener((message) => {
+    if(message.type === "ENABLE_FOCUS") applyRules();
+    
+    if(message.type === "DISABLE_FOCUS"){
         chrome.declarativeNetRequest.updateDynamicRules({
             
-            removeRuleIds: [1],
-            addRules: [BLOCK_RULE]
-        },
-    () =>  console.log('Focus ENABLED')
+            removeRuleIds: Array.from({ length: 100}, (_, i) => i+1) },
+    () =>  console.log('All Rules Removed')
     );
 }
-  if(message.type === "DISABLE_FOCUS") {
-        // logic to unblock distracting websites
-        chrome.declarativeNetRequest.updateDynamicRules({
-            removeRuleIds: [1]
-        }, () => console.log('Focus DISABLED'));
-  }
-
+  if(message.type === "UPDATE_RULES") applyRules();
 });

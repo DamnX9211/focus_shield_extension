@@ -1,11 +1,10 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>focus-shield-extension
-</title>
-<style>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>focus-shield-extension</title>
+    <style>
       body {
         font-family: Arial, sans-serif;
         width: 250px;
@@ -16,13 +15,23 @@
         margin-bottom: 10px;
       }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <h1>Focus Shield</h1>
     <p>Protect your focus. Block distractions.</p>
 
+    <input
+      type="text"
+      id="siteInput"
+      placeholder="example.com"
+      style="width: 100%; margin-bottom: 8px"
+    />
+
+    <button id="addBtn">Add Sites</button>
     <button id="toggleBtn">Loading...</button>
 
+    <ul id="siteList"></ul>
+
     <script src="popup.js"></script>
-</body>
+  </body>
 </html>
