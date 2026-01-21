@@ -30,16 +30,37 @@
      });
  }
 
+    function disableFocus() {
+        chrome.declarativeNetRequest.updateDynamicRules({
+            removeRuleIds: Array.from({ length: 100}, (_, i) => i+1)
+        }, () => {
+            chrome.storage.local.set({ focusEnabled: false});
+            chrome.alarms.clear("focusTimer");
+            console.log('Focus mode disabled and rules cleared.');
+        }
+    );
+    }
+
     // MESSAGE LISTENER
 chrome.runtime.onMessage.addListener((message) => {
-    if(message.type === "ENABLE_FOCUS") applyRules();
+    if(message.type === "ENABLE_FOCUS" || message.type === "START_TIMED_FOCUS") {
+        applyRules();
+        chrome.alarms.create("focusTimer", { 
+            delayInMinutes: message.minutes
+        })
+
+    }
     
     if(message.type === "DISABLE_FOCUS"){
-        chrome.declarativeNetRequest.updateDynamicRules({
-            
-            removeRuleIds: Array.from({ length: 100}, (_, i) => i+1) },
-    () =>  console.log('All Rules Removed')
-    );
+        disableFocus();
 }
   if(message.type === "UPDATE_RULES") applyRules();
 });
+
+// ALARM LISTENER
+chrome.alarms.onAlarm.addListener((alarm) => {
+    if(alarm.name === "focusTimer") {
+        disableFocus();
+        console.log("Focus session ended. Focus mode disabled.");
+    }
+})

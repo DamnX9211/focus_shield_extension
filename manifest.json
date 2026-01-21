@@ -12,6 +12,7 @@
   "permissions": [
     "declarativeNetRequest",
     "declarativeNetRequestWithHostAccess",
-    "storage"
+    "storage",
+    "alarms"
   ]
 }
