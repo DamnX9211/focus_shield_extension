@@ -1,28 +1,15 @@
-const toggleBtn = document.getElementById('toggleBtn');
+const stopBtn = document.getElementById('stopBtn');
 const addBtn = document.getElementById('addBtn');
 const siteInput = document.getElementById('siteInput');
 const siteList = document.getElementById('siteList');
 const startBtn = document.getElementById('startBtn');
 const minutesInput = document.getElementById('minutesInput');
+const statusDiv = document.getElementById("status");
+const attemptsDiv = document.getElementById("attempts");
 
 // Loading initial state
-chrome.storage.local.get(["focusEnabled", "blockedSites"], (data) => {
-    updateToggle(data.focusEnabled || false);
-    renderList(data.blockedSites || []);
-});
-
-// toggle button text
-toggleBtn.addEventListener('click', () => {
-    chrome.storage.local.get("focusEnabled", (data) => {
-        const newState = !data.focusEnabled;
-
-        chrome.storage.local.set({ focusEnabled: newState}, () => {
-            chrome.runtime.sendMessage({
-                type: newState ? "ENABLE_FOCUS" : "DISABLE_FOCUS"
-            });
-            updateToggle(newState);
-        });
-    });
+chrome.storage.local.get(["focusEnabled", "blockedSites", "attempts", "focusEndTime"], (data) => {
+    render(data);
 });
 
 // Adding new sites
@@ -44,15 +31,15 @@ addBtn.addEventListener("click", () => {
     });
 });
 
-
 // Start focus session with timer
 startBtn.addEventListener("click", ()=> {
     const minutes = parseInt(minutesInput.value);
-    if(!minutes || minutes <= 0) return;
+    if(!minutes) return;
 
     chrome.storage.local.set({
         focusEnabled: true,
-        focusEndTime: Date.now() + minutes * 60 * 1000
+        focusEndTime: Date.now() + minutes * 60 * 1000,
+        attempts: 0
     }, () => {
         chrome.runtime.sendMessage({
             type: "START_TIMED_FOCUS",
@@ -63,14 +50,34 @@ startBtn.addEventListener("click", ()=> {
 });
 
 // manual disable when time is up
-toggleBtn.addEventListener("click", () => {
+stopBtn.addEventListener("click", () => {
     chrome.runtime.sendMessage({ type: "DISABLE_FOCUS"});
 });
 
 
-// UI Helpers
-function updateToggle(enabled) {
-    toggleBtn.textContent = enabled ? "Disable Focus" : "Enable Focus";
+// Render loop
+setInterval(() => {
+    chrome.storage.local.get(
+        ["focusEnabled", "focusEndTime", "attempts", "blockedSites"],
+        render
+    );
+}, 1000);
+
+function render(data) {
+    if(!data.focusEnabled) {
+        statusDiv.textContent = "Focus Mode is OFF";
+        attemptsDiv.textContent = "";
+    } else {
+        const remaining = Math.max(0, Math.floor((data.focusEndTime - Date.now()) / 1000));
+        const min = Math.floor(remaining / 60);
+        const sec = remaining % 60;
+
+        statusDiv.textContent = `Time left: ${min}: ${sec.toString().padStart(2, "0")}`;
+
+        attemptsDiv.textContent = `Blocked Attempts: ${data.attempts || 0}`;
+    }
+
+    renderList(data.blockedSites || []);
 }
 
 // UI render list of blocked sites
