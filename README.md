@@ -28,7 +28,7 @@ Everything runs locally in the browser. No tracking. No servers.
 ## 🎥 Demo
 
 > Watch the demo video below to see Focus Shield in action.
-
+https://github.com/user-attachments/assets/8444224c-5d26-4204-9e46-687a21797875
 
 ---
 
