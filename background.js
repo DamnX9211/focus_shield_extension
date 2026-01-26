@@ -4,7 +4,10 @@
         id: index + 1,
         priority: 1,
         action: {
-            type: "block"
+            type: "redirect",
+            redirect: {
+                extensionPath: "/blocked.html?site=" + encodeURIComponent(site)
+            }
         },
         condition: {
            urlFilter: site,
@@ -67,7 +70,7 @@ chrome.runtime.onMessage.addListener((message) => {
 });
 
 // Attempt Tracker
-chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
+chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
     if(changeInfo.status !== "loading") return;
 
     chrome.storage.local.get(
